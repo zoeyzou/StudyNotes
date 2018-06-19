@@ -1,11 +1,15 @@
 # JS Learning Notes
 
-[Study Material: EloquentJS](http://eloquentjavascript.net/)
-
 ## Outline
-1. [Chapter 1: Values, Types and Operators](#chapter1)
-2. [Chapter 2: Program structure](#chapter2)
-
+### 1. Eloquent JS
+  - [1.1 Chapter 1: Values, Types and Operators](#chapter1)
+  - [1.2 Chapter 2: Program structure](#chapter2)
+  - [1.3 Chapter 3: Functions](#chapter3)
+### 2. You Don't Know JS: Scope & Closures
+  - [2.1 Chapter 1: What is Scope](#scope)
+  - [2.2 Chapter 2: Lexical Scope](#l-scope)
+---
+# [Eloquent JS](http://eloquentjavascript.net/)
 ## <a name="chapter1"></a>Chapter 1: Values, Types and Operators 
 - Values are chunks that represent pieces of information stored somewhere in the memory as *bits*
 - Value has type that determines its role, e.g. number / pieces of text(string) / functions etc
@@ -110,5 +114,123 @@
   - Syntax: `//` for single line of comments; `/*  */`for multiple lines of comments
   - A comment is a piece of text that is part of the program but is completely ignored by the computer, thus it is mainly written for human reader
   - A good habit for a developer is to write comments between the code to explain the thoughts and idea, so other developers can understand his code
+---
+## <a name="chapter3"></a>Chapter 3: Functions
+* **General objective of functions**
+  - Structure larger program
+  - Reduce repetition
+  - Associate names with subprograms
+  - Isolate subprograms from each other
+  - Defining new vocabulary
+* **Defining a function**
+  - A function definition is a regular binding of which the value is a function
+  - A function can have a set of parameters (or none at all) and a body that must be wrapped in brackets even if there is only one line of code
+  - Some functions provide value, some don't but only side effect 
+  - `return` determines the value function provides, and end the function as well
+  - functions that don't have `return` simply return undefined
+  - Parameters to a function are like regular bindings, but their initial values are given by the *caller* instead of code in functions itself
+* [**Scope**](#scope)
+  - Bindings have scopes, means its visibility in which part of program
+  - Global bindings are defined outside of functions, and are visible in the whole program
+  - Local bindings are declared as function parameter or inside functions, thus can only be seen by such functions
+  - Everytime function is called, new instances of local bindings are created; in other words, each function has its own "world"
+  - `let` and `const` bindings are local to *block* they are declared in, but `var`(pre ES6) is visible throughout whole function that they appear in or throughout global if they are not in functions
+    ```Javascript
+    let x = 10;
+    if (true) {
+      let y = 20;
+      var z = 30;
+      console.log(x + y + z);
+      // → 60
+    }
+    // y is not visible here
+    console.log(x + z);
+    // → 40
+    ```
+  - JS does not only distinguishes *local* and *global* bindings, but also allows to create functions and scopes inside other blocks and functions, produces multiple degrees of locality
+  - when multiple binding have same name, code can see **only innermost** one
+  - [*lexical scoping*](#l-scope): The set of bindings visible inside a block is determined by the place of that block in the program text. Each local scope can also see all the local scopes that contain it, and all scopes can see the global scope. 
+  - **Function as a value** is different than defined function with `const`. A function value can do everything the latter can do, but it can also be assigned new value as other bindings.
+  - **Function declareation** is a shorter way to create a function binding and it doesn't require a semicolon after it. It is **not** a part of top to bottom flow, so it can be called before it is declared.
+  - **Arrow function** has the syntax of:
+    ```javascript
+    const someFunction = (a, b) => {do nothing};
+    const otherFunction = a => a * 2;
+    //or shorter version if there is only one line
+    ```
+  * **Call stack** is the place where computer store the function context. When the stack grows too big, "stack over flow".
+  * JavaScript is extremely broad-minded about the number of arguments you pass to a function. If you pass too many, the extra ones are ignored. If you pass too few, the missing parameters get assigned the value `undefined`.
+  * **Closure** is a feature of being able to reference a specific instance of a local binding in an enclosing scope. A function that references bindings from local scopes around it is called a *closure*.
+    ```javascript
+    function multiplier (factor) {
+      return number => number * factor;
+    } 
+    let twice = multiplier(2);
+    console.log(twice(5));
+    // -> 10
+    ```
+  
+
+
+
+
+
+
+
+
+
+---
+# [You Don't Know JS: Scope & Closures](https://github.com/getify/You-Dont-Know-JS)
+
+## <a name="scope"></a>Chapter 1: Scope & Closures
+* **Scope** is a well-defined set of rules for storing variables in some location and for finding those variables at a later time
+* **JS is a compiled language**, there are three steps in a traditional compiled language before code gets executed:
+
+  1. **Tokenizing/Lexing**: breaking up a string of characters into meaningful chunks. e.g. `var a = 2` will be broken into `var`, `a`, `=`, `2`
+  2. **Parsing**: taking an array of tokens and turning it into a tree(Abstract Syntax Tree) of nested elements, which represents grammatical structure e.g. `var a = 2` starts with a top-level node called `VariableDeclaration`(var), with a child node called `Identifier`(a) and another child called `AssignmentExpression`(=)which itself has a child called `NumericLiteral`(2)
+  3. **Code-generation**: the process of taking AST and turn it into executable code. e.g. take AST for `var a = 2` and turn it into machine instruction which creates a variable called `a`, reserve memory for it and then store a value `2` into `a`
+* **JS engine** is vastly more complex than the above three steps, it doesn't have plenty of time to optimize because its compilation happens mostly mere miliseconds before the code executed. To simplify it, JS compile the code that it's about to execute just before its execution
+* **Three characters to interact to process the program**:
+
+  1. *Engine*: responsible for compilation and execution, say a 'soldier'
+  2. *Compiler*: all the parsing and code-generation, say a 'translator'
+  3. *Scope*: collect all the declared Identifier in its list and ensure rules how these are accesible by currently executing code, say a 'commander'
+* As for `var a = 2`, engine sees it as two statements -- one for itself to handle during execution, one for compiler to handle during compilation
+
+  -> *Compiler* encounter the code
+  -> *Compiler* asks *Scope* to check if variable `a` already exists
+  -> if yes, *Compiler* will ignore and move on
+  -> if no, *Compiler* asks *Scope* to declare a new variable 
+  -> *Compiler* produces code for *Engine*
+  -> *Engine* asks *Scope* if variable `a` exist in current scope
+  -> if yes, *Engine* uses that variable
+  -> if not, *Engine* looks elsewhere
+  -> if found something, *Engine* then assign value to it
+  -> if nothing has been found, *Engine* reports error
+* *Engine* needs to consult *Scope* to see if variable was declared, there are two types of 'consult': LHS(Left-hand Side) and RHS(Right-hand Side).
+  ```Javascript
+  console.log(a); 
+  // this is RHS because nothing is assigned to a here and we are retrieving the value of a
+  a = 2;
+  // this is LHS because we find the variable a and assign a value to it
+  ```
+* LHS is about 'who's the target of the assignment' while RHS is about 'who's the source of the assignment'
+* **Nested scope**: *Engine* starts at the currently executing *Scope*, look for the variable there; if not found, keeps going up one level till it gets to global scope, either found or error
+* When RHS fails to find a variable `ReferenceError` will be thrown; however, if LHS fails to find a variable, the global *Scope* will create such variable in the global scope and hand it back to *Engine*
+* If a variable is found by RHS but you try to do something impossible with it, such as calling it as a function when it actually is not or referece on a `null` or `undefined` value, the *Engine* will throw `TypeError`
+
+* `ReferenceError` is *Scope* resolution-failure related, whereas `TypeError` implies that *Scope* resolution was successful, but that there was an illegal/impossible action attempted against the result
+
+---
+## <a name="l-scope"></a>Chapter 2: Lexical Scope
+* JavaScript employs *Lexical Scope*
+* The first phase of compiler is called *lexing*(tokenizing), it examines a string of source code characters and assigns semantic meaning 
+* *Lexical Scope* is scope that is defined at lexing time, thus is based on where variables and block of scope are written
+* **Scope look-up stops once it finds the first match**. The same identifier names can be specified at multiple layers of nested scope, this is called **shadowing**
+* No matter where a function is invoked from, or even how it is invoked, its lexical scope is **only** defined by where the function was declared
+* `eval(...)` or `with` can somehow cheat lexical scope, but it is bad practise because code runs slow because of them. If the Engine finds an `eval(..)` or `with` in the code, it essentially has to assume that all its awareness of identifier location may be invalid, because it cannot know at lexing time exactly what code you may pass to `eval(..)` to modify the lexical scope, or the contents of the object you may pass to `with` to create a new lexical scope to be consulted. In other words, in the pessimistic sense, most of those optimizations it would make are pointless if `eval(..)` or `with` are present, so it simply doesn't perform the optimizations at all.
+
+
+
 
 
